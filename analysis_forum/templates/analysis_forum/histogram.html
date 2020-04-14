@@ -1,0 +1,196 @@
+
+<html>
+<head>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+<script>
+function enter_columns(data){
+	//alert(data);
+	var col = data
+	for(var i = 0; i < col.length ;i++){
+		//alert(col[i]);
+		$('#sel1').append('<option value="' + col[i] + '">' + col[i] + '</option>');
+		$('#sel2').append('<option value="' + col[i] + '">' + col[i] + '</option>');
+	}
+	$('#sel1').change(function () {
+            $('#msg1').text('Selected Column for X-axis: ' + this.options[this.selectedIndex].text);
+     });
+	 
+	 $('#sel2').change(function () {
+            $('#msg2').text('Selected Column for Y-axis: ' + this.options[this.selectedIndex].text);
+     });
+}
+function getcolumns(data){
+	//alert(data);
+	var col = data.split(',');
+	for(var i = 0; i < col.length ;i++){
+		//alert(col[i]);
+		$('#sel1').append('<option value="' + i + '">' + col[i] + '</option>');
+		$('#sel2').append('<option value="' + i + '">' + col[i] + '</option>');
+	}
+	$('#sel1').change(function () {
+            $('#msg1').text('Selected Column for X-axis: ' + this.options[this.selectedIndex].text);
+     });
+	 
+	 $('#sel2').change(function () {
+            $('#msg2').text('Selected Column for Y-axis: ' + this.options[this.selectedIndex].text);
+     });
+}
+
+$(document).ready(function () {
+	console.log("reached histogram")
+	$.getJSON("{% url 'COLUMNS' %}", function(data, status, xhr){
+		console.log(JSON.parse(data))
+		enter_columns(JSON.parse(data));
+	});
+});
+
+function plot_graph(getdata,lbls,colName,x,y)
+{
+	console.log(getdata+typeof(getdata));
+		console.log(lbls+typeof(getdata));
+             
+		var hist = new Chart(myChart, {
+			type: 'bar',
+			data: {
+				labels: lbls,
+				datasets: [{
+				label: x,
+				data: getdata,
+				backgroundColor: 'rgba(255, 99, 132, 1)',
+				}]
+			},
+			options: {
+				layout:{
+                    padding:{
+                      left:50,
+                      right:50,
+                      bottom:50,
+                      top:50
+                    }
+                  },
+				scales: {
+				xAxes: [{
+					display: false,
+					barPercentage: 1.3,
+					ticks: {
+						max: 10,
+					}
+				},
+				 {
+					display: true,
+					ticks: {
+						autoSkip: false,
+						max: 10,
+					}
+				}],
+				yAxes: [{
+					ticks: {
+					beginAtZero:true
+					}
+				}]
+				}
+			}
+			})
+}
+
+$("#form1").on('submit', function(e){
+        e.preventDefault();
+        console.log('form has been submitted');
+        var form_data = new FormData(this);
+		
+        x=this["x-value"].value;
+		console.log(x)
+		y=this["y-value"].value;
+		
+		document.getElementById("myChart").remove();
+		var c=document.createElement("canvas");
+		c.id="myChart";
+		c.height=500;
+		c.width=500;
+		document.getElementById("ChartHere").appendChild(c);
+		var myChart = document.getElementById("myChart").getContext('2d');
+		var colName, getdata, lbls;
+		
+		if(localStorage.getItem(x))
+		{
+			console.log("from localStorage")
+			colName=x;
+			console.log(localStorage.getItem(x),typeof(localStorage.getItem(x)))
+			lbls=JSON.parse(localStorage.getItem(x))[0];
+			getdata=JSON.parse(localStorage.getItem(x))[1];
+			console.log(lbls)
+			console.log(getdata)
+			plot_graph(getdata,lbls,colName,x,y)
+		}
+		else
+		{
+			$.ajax({
+          url: "{% url 'DATA-SEND-CATEGORICAL' %}",
+          type: "POST",
+          contentType: false,
+          processData: false,
+          data: form_data,
+
+          success: function(data)
+		  {	
+			console.log("contacting server");
+			console.log("enter hist");
+
+
+			var resp = JSON.parse(data);
+			resp = JSON.parse(resp);
+
+            getdata = resp[x+"_frequency"]; 
+            console.log(getdata+typeof(getdata));
+            lbls = resp[x];
+			if(!localStorage.getItem(x))
+            {
+               localStorage.setItem(x,JSON.stringify([lbls,getdata]))
+               console.log("set");
+            }
+            colName = x;
+			plot_graph(getdata,lbls,colName,x,y)
+			
+	}
+		});
+		}
+		
+		
+
+		
+	});		
+
+</script>
+</head>
+<body id = "body">
+<h1>HISTOGRAM</h1>
+<!-- vertical tab-->
+		<form id = "form1" method = "POST">
+				{% csrf_token %}
+				<select id="sel1" class="custom-select" style="width:200px;" name = "x-value">
+				<option value="">X-axis</option>
+				</select>
+				</div>
+				
+				<p id="msg1"></p>
+				
+				<div>
+				<select id="sel2" class="custom-select" style="width:200px;" name = "y-value">
+				<option value="">Y-axis</option>
+				</select>
+				</div>
+
+				<p id="msg2"></p><br/><br/><br/><br/><br/><br/>
+				<button class="button5" style="width:200px;">Submit</button>	
+		</form>
+    	<div class="card" id="slider_output" style="display:none">
+              
+        </div>
+         
+        
+        
+        
+        
+</body>
+</html>

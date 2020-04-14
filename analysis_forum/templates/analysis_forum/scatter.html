@@ -1,0 +1,215 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+<script>
+function enter_columns(data){
+	//alert(data);
+	var col = data["quantitative"]
+	for(var i = 0; i < col.length ;i++){
+		//alert(col[i]);
+		$('#sel1').append('<option value="' + col[i] + '">' + col[i] + '</option>');
+		$('#sel2').append('<option value="' + col[i] + '">' + col[i] + '</option>');
+	}
+	$('#sel1').change(function () {
+            $('#msg1').text('Selected Column for X-axis: ' + this.options[this.selectedIndex].text);
+     });
+	 
+	 $('#sel2').change(function () {
+            $('#msg2').text('Selected Column for Y-axis: ' + this.options[this.selectedIndex].text);
+     });
+}
+function getcolumns(data){
+	//alert(data);
+	var col = data["quantitative"].split(',');
+	for(var i = 0; i < col.length ;i++){
+		//alert(col[i]);
+		$('#sel1').append('<option value="' + i + '">' + col[i] + '</option>');
+		$('#sel2').append('<option value="' + i + '">' + col[i] + '</option>');
+	}
+	$('#sel1').change(function () {
+            $('#msg1').text('Selected Column for X-axis: ' + this.options[this.selectedIndex].text);
+     });
+	 
+	 $('#sel2').change(function () {
+            $('#msg2').text('Selected Column for Y-axis: ' + this.options[this.selectedIndex].text);
+     });
+}
+function plot_chart(data,colName)
+{
+  console.log("in plot")
+            for(var i=0; i<10; i++)
+            {
+              console.log(data[i])
+            }
+            //data=[{x:1,y:1},{x:6,y:6}]
+            console.log(data)
+            //points=[1,2,3]
+  Chart.defaults.global.defaultFontFamily = 'Lato';
+              Chart.defaults.global.defaultFontSize = 18;
+              Chart.defaults.global.defaultFontColor = '#777';
+
+              var scatterChart = new Chart(myChart, {
+                type:'scatter', // bar, horizontalBar, pie, line, doughnut, radar, polarArea
+                
+                data:{
+                    datasets:[{label:"Trend",borderColor: "#c45850",fill:false,data:data,showLine:false}]
+                } ,
+                options:{
+                  title:{
+                    display:true,
+                    text: colName,
+                    fontSize:25
+                  },
+                  legend:{
+                    display:true,
+                    position:'right',
+                    labels:{
+                      fontColor:'#000'
+                    }
+                  },
+                  layout:{
+                    padding:{
+                      left:50,
+                      right:0,
+                      bottom:0,
+                      top:0
+                    }
+                  },
+                  tooltips:{
+                    enabled:true
+                  }
+                }
+              });
+              console.log("plotted")
+        
+}
+$(document).ready(function () {
+		console.log("reached scatterchart")
+		$.getJSON("{% url 'COLUMNS' %}", function(data, status, xhr){
+			console.log(JSON.parse(data))
+			enter_columns(JSON.parse(data));
+		});
+});
+
+
+$("#form1").on('submit', function(e){
+        
+  e.preventDefault();
+                console.log('form has been submitted');
+                var form_data = new FormData(this);
+            
+                x=this["x-value"].value;
+            console.log(x)
+            y=this["y-value"].value;
+            
+            document.getElementById("myChart").remove();
+            var c=document.createElement("canvas");
+            c.id="myChart";
+            c.height=500;
+            c.width=500;
+            document.getElementById("ChartHere").appendChild(c);
+            var myChart = document.getElementById("myChart").getContext('2d');
+            var colName, get_x, get_y;
+            console.log(x+"_l")
+            var n;
+
+            if(localStorage.getItem(x+"_l"))
+            {
+              console.log("from localStorage")
+              colName=x;
+              console.log(localStorage.getItem(x+"_l"),typeof(localStorage.getItem(x+"_l")))
+              get_x=JSON.parse(localStorage.getItem(x+"_l"));
+              console.log(get_x)
+            }
+            if(localStorage.getItem(y+"_l"))
+            {
+              console.log("from localStorage")
+              colName=x;
+              console.log(localStorage.getItem(y+"_l"),typeof(localStorage.getItem(y+"_l")))
+              get_y=JSON.parse(localStorage.getItem(y+"_l"));
+              console.log(get_y)
+            }
+            if(!localStorage.getItem(x+"_l") || !localStorage.getItem(y+"_l"))
+            {
+              $.ajax({
+          url: "{% url 'DATA-SEND-NUMERICAL' %}",
+          type: "POST",
+          contentType: false,
+          processData: false,
+          data: form_data,
+          success: function(data)
+          {
+            console.log("enter scatter");
+            var resp = JSON.parse(data);
+            get_x = resp[x];
+            console.log(get_x);
+            get_y = resp[y];
+            console.log(get_y);
+            localStorage.setItem(x+"_l",JSON.stringify(get_x))
+            localStorage.setItem(y+"_l",JSON.stringify(get_y))
+            
+            //var lbls = ["class 1","class 2","class 3","class 4","class 5","class 6"]
+            var points=[]
+            n=get_x.length;
+            for(var i=0; i<n; i++)
+            {
+              points[i] = {x:get_x[i],y:get_y[i]};
+              console.log(points[i])
+            }
+            colName=y+" vs "+x
+            plot_chart(points,colName)
+          }
+          
+              });
+            }
+            else{
+              var points=[]
+              n=get_x.length;
+            for(var i=0; i<n; i++)
+            {
+              points[i] = {x:get_x[i],y:get_y[i]};
+              console.log(points[i])
+            }
+              colName=y+" vs "+x
+              plot_chart(points,colName)
+            }
+      
+      });
+
+
+
+</script>
+</head>
+<body id = "body">
+<h1>SCATTER CHART</h1>
+<!-- vertical tab-->
+		<form id = "form1" method = "POST">
+				{% csrf_token %}
+				<select id="sel1" class="custom-select" style="width:200px;" name = "x-value">
+				<option value="">X-axis</option>
+				</select>
+				</div>
+				
+				<p id="msg1"></p>
+				
+				<div>
+				<select id="sel2" class="custom-select" style="width:200px;" name = "y-value">
+				<option value="">Y-axis</option>
+				</select>
+				</div>
+
+				<p id="msg2"></p><br/><br/><br/><br/><br/><br/>
+				<button class="button5" style="width:200px;">Submit</button>	
+		</form>
+    	<div class="card" id="slider_output" style="display:none">
+              
+        </div>
+         
+        
+        
+        
+        
+</body>
+</html>

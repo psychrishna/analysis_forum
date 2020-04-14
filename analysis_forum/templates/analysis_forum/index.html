@@ -1,0 +1,251 @@
+{% load static %}
+{% load crispy_forms_tags %}
+<!doctype html >
+<html lang="en">
+  <head>
+  	<title>Perception</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet'  type='text/css'>
+
+    
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+		<link rel="stylesheet" type = "text/css" href={%  static 'analysis_forum/css/style.css' %} >
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js">
+   </script>
+ 
+    <script>
+      	var lbls = ["class 1","class 2","class 3","class 4"]
+        var x, y;
+    $(document).ready(function(){
+      $("#form").on('submit', function(e){
+        e.preventDefault();
+        console.log('form has been submitted');
+        $form = $(this);
+        var form_data = new FormData(this);
+        console.log(form_data); 
+        $.ajax({
+          url: "{% url 'FILE_UPLOAD' %}",
+          type: "POST",
+          contentType: false,
+          processData: false,
+          data: form_data,
+          success: function(data){
+            $("#exampleModal").modal('hide');
+            document.getElementById("div1").style.display="none"; 
+            document.getElementById("div3").style.display="block";
+        }
+      });
+      });
+    });
+    function replacebutton(){
+			//document.getElementById("div1").style.display="none"; 
+			document.getElementById("div2").style.display="block"; 
+			document.getElementById("div3").style.display="none";
+		}
+
+    function barchart(){
+      document.getElementById("popup1").style.display="block";
+      $(document).ready(function(){
+        $('#popup1').load("{% url 'BARCHART' %}");
+      });
+
+      }
+      
+      function piechart(){
+      document.getElementById("popup1").style.display="block";
+      $(document).ready(function(){
+        $('#popup1').load("{% url 'PIECHART' %}");
+      });
+
+      }
+
+      function polararea(){
+      document.getElementById("popup1").style.display="block";
+      $(document).ready(function(){
+        $('#popup1').load("{% url 'POLARAREA' %}");
+      });
+
+      }
+
+    function histogram(){
+      document.getElementById("popup1").style.display="block";
+      $(document).ready(function(){
+        $('#popup1').load("{% url 'HISTOGRAM' %}");
+      });
+      }
+
+      function linechart(){
+      document.getElementById("popup1").style.display="block";
+      $(document).ready(function(){
+        $('#popup1').load("{% url 'LINECHART' %}");
+      });
+
+      }
+
+      function scatterplot(){
+      document.getElementById("popup1").style.display="block";
+      $(document).ready(function(){
+        $('#popup1').load("{% url 'SCATTERPLOT' %}");
+      });
+
+      }
+
+
+    function linear_reg(){
+      document.getElementById("popup1").style.display="block";
+      $(document).ready(function(){
+        $('#popup1').load("{% url 'LINEAR' %}");
+      });
+      }
+
+
+
+    </script>
+  </head>
+  <body>
+		<div class="wrapper d-flex align-items-stretch">
+			<nav id="sidebar">
+				<div class="p-4 pt-5">
+		  		<a href="#" class="img logo rounded-circle mb-5"><img class="img logo rounded-circle mb-5" src = {% static 'analysis_forum/images/logo.jpeg' %}></a>
+          
+          <div class="card">
+            <div class="card-body">
+              <h2 class="card-title text-center font-weight-bolder" style="font-family: Josefin Slab; ">Perception</h4>
+              <p class="card-text font-italic" style="color:darkblue">
+                Welcome to Perception. Here's where you can explore a multitude of possibilites with your data. Visualise 
+                data and make the most out of the insights. That's not all, you can predict data as well! Got a dataset?  
+              </p>
+              <button class="btn btn-primary" onclick="document.getElementById('sidebarCollapse').click()">Let's Get Started</button>
+            </div>
+          </div>
+
+	        <div class="footer">
+	        	
+	        </div>
+
+	      </div>
+    	</nav>
+
+        <!-- Page Content  -->
+      <div id="content" class="p-4 p-md-5">
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <div class="container-fluid">
+
+            <button type="button" id="sidebarCollapse" class="btn btn-primary">
+              <i class="fa fa-bars"></i>
+              <span class="sr-only">Toggle Menu</span>
+            </button>
+            <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fa fa-bars"></i>
+            </button>
+
+            
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="nav navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'HOME' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="document.getElementById('sidebarCollapse').click()">About</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        <br>
+        <br>
+        <div class="container">
+          <div class="row">
+            <div class="col-md-5">
+              <!-- Content -->
+            </div>
+            <div class="col-md-4">
+              <!--<button type="button" class="btn btn-outline-primary">Upload      <img src="images/upload.svg" height="30px"></button>-->
+              <!-- Button trigger modal -->
+            <div id = "div1" style = "display:block">
+              <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#exampleModal">Upload  <img src={% static 'analysis_forum/images/upload.svg' %} height="30px">
+                
+              </button>
+
+              <!-- Modal -->
+              <div class="modal" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLabel">Upload Dataset</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      Select the *.csv file for analysis 
+                    </div>
+                    <div class="modal-footer">
+                      <form method="POST" target="chldfr" id = "form" enctype = "multipart/form-data">
+                        {% csrf_token %}
+                        {{ form }}
+                        <br>
+                        <input id = "submit_button" class = "btn btn-outline-success" type="submit" style = "margin-left:200px;margin-top:20px">
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            </div>
+            <div class="col-md-3">
+              <!-- Content -->
+            </div>
+          </div>
+          <iframe name="chldfr" id="helper" hidden></iframe>
+          <!--<p id="display_hello"></p>-->
+          <!-- the task bar -->
+          <div id="div3" style="display:none"><br/><br/>
+            <center><button style="background-color: white;color: black;border: 2px solid #4CAF50;" onclick="replacebutton()">Analyse the data</button></center>
+          </div>
+          <div style="display:none" id="div2">
+          <!-------------horizontal tab-------------->
+          <div class="row">
+           <!-- <div class="tab"> -->
+              <div class="col-md-4">
+                <div class="btn-group" role="group" aria-label="Basic example">
+                  <button class="btn btn-outline-primary" onclick="barchart()">BAR GRAPH</button>
+                  <button class="btn btn-outline-primary" onclick="piechart()">PIE CHART</button>
+                  <button class="btn btn-outline-primary" onclick="polararea()">POLAR AREA</button>
+                    
+                </div>
+                <br>
+                <br>
+                <div class="btn-group" role="group" aria-label="Basic example">
+                  <button class="btn btn-outline-primary" onclick="linechart()">LINE CHART</button>
+                  <button class="btn btn-outline-primary" onclick="scatterplot()">SCATTER PLOT</button>
+                  <button class="btn btn-outline-primary" onclick="linear_reg()">LINEAR-REGRESSION</button>
+                </div>
+                <div class="columndiv side">
+                  <div style="display:none" class="verticaltab" id="popup1"> </div>
+                </div>
+              </div>
+              <div class="col-md-8" id="ChartHere">
+                <canvas id="myChart"></canvas>
+              </div>
+              
+            <!--</div>-->
+            
+          </div>
+            
+        </div>
+
+        
+
+    <!--<script src={% static 'analysis_forum/js/jquery.min.js' %}></script>-->
+    <script src={% static 'analysis_forum/js/popper.js' %}></script>
+    <script src={% static 'analysis_forum/js/bootstrap.min.js' %}></script>
+    <script src={% static 'analysis_forum/js/main.js' %}></script>
+  </body>
+</html>

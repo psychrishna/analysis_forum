@@ -1,0 +1,260 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+<script>
+function enter_columns(data){
+	//alert(data);
+	var col = data["quantitative"]
+	for(var i = 0; i < col.length ;i++){
+		//alert(col[i]);
+		$('#sel1').append('<option value="' + col[i] + '">' + col[i] + '</option>');
+		$('#sel2').append('<option value="' + col[i] + '">' + col[i] + '</option>');
+	}
+	$('#sel1').change(function () {
+            $('#msg1').text('Selected Column for X-axis: ' + this.options[this.selectedIndex].text);
+     });
+	 
+	 $('#sel2').change(function () {
+            $('#msg2').text('Selected Column for Y-axis: ' + this.options[this.selectedIndex].text);
+     });
+}
+function getcolumns(data){
+	//alert(data);
+	var col = data["quantitative"].split(',');
+	for(var i = 0; i < col.length ;i++){
+		//alert(col[i]);
+		$('#sel1').append('<option value="' + i + '">' + col[i] + '</option>');
+		$('#sel2').append('<option value="' + i + '">' + col[i] + '</option>');
+	}
+	$('#sel1').change(function () {
+            $('#msg1').text('Selected Column for X-axis: ' + this.options[this.selectedIndex].text);
+     });
+	 
+	 $('#sel2').change(function () {
+            $('#msg2').text('Selected Column for Y-axis: ' + this.options[this.selectedIndex].text);
+     });
+}
+
+$(document).ready(function () {
+		console.log("reached barchart")
+		$.getJSON("{% url 'COLUMNS' %}", function(data, status, xhr){
+			console.log(JSON.parse(data))
+			enter_columns(JSON.parse(data));
+		});
+});
+
+function plot_graph(points,min,max,colName,c)
+{
+  document.getElementById("loading").remove();
+  document.getElementById("ChartHere").appendChild(c);
+            var myChart = document.getElementById("myChart").getContext('2d');
+            
+  points2=[{x:min[0],y:min[1]},{x:max[0],y:max[1]}]
+
+  Chart.defaults.global.defaultFontFamily = 'Lato';
+              Chart.defaults.global.defaultFontSize = 18;
+              Chart.defaults.global.defaultFontColor = '#777';
+
+              let linear_reg = new Chart(myChart, {
+              type:'scatter', // bar, horizontalBar, pie, line, doughnut, radar, polarArea
+              data:{
+                //labels:['Boston', 'Worcester', 'Springfield', 'Lowell', 'Cambridge', 'New Bedford'],
+                datasets:[{
+                  label:'Data Points',
+                  fill:false,
+                  showLine:false,
+                  data:points,
+                  backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                ],
+                },{
+                
+                type:'line',
+                label:"Line of Best Fit",
+                fill:false,
+                data:points2
+                }]
+              },
+              options:{
+                title:{
+                  display:true,
+                  text:colName,
+                  fontSize:25
+                },
+                legend:{
+                  display:true,
+                  position:'right',
+                  labels:{
+                    fontColor:'#000'
+                  }
+                },
+                layout:{
+                  padding:{
+                    left:50,
+                    right:0,
+                    bottom:0,
+                    top:0
+                  }
+                },
+                tooltips:{
+                  enabled:true
+                }
+              }
+            });
+            $("#predictor").css("display","inline");
+            $("#id_x_test").on("blur",function(e){
+              console.log(document.cookie)
+              var ca = document.cookie.split(';');
+              var slope, intercept;
+              for(var i = 0; i <ca.length; i++) {
+                var c = ca[i];
+                if(c.split('=')[0].trim()=="slope")
+                {
+                  slope=parseFloat(c.split('=')[1])
+                  console.log(slope)
+                }
+                else if(c.split('=')[0].trim()=="intercept")
+                {
+                  intercept=parseFloat(c.split('=')[1])
+                }
+                
+              }
+              document.getElementById("id_y_test").value= slope*parseFloat(document.getElementById("id_x_test").value) + intercept;
+              console.log(slope*parseFloat(document.getElementById("id_x_test").value) + intercept)
+            })
+
+
+}
+$("#form1").on('submit', function(e){
+          
+          e.preventDefault();
+                console.log('form has been submitted');
+                var form_data = new FormData(this);
+            
+                x=this["x-value"].value;
+            console.log(x)
+            y=this["y-value"].value;
+            
+            document.getElementById("myChart").remove();
+            var c=document.createElement("canvas");
+            c.id="myChart";
+            c.height=500;
+            c.width=500;
+            var p = document.createElement("p")
+            p.id="loading"
+            p.innerHTML='<div class="spinner-grow text-primary" role="status">\
+                          <span class="sr-only">Loading...</span>\
+                        </div>\
+                        <div class="spinner-grow text-secondary" role="status">\
+                          <span class="sr-only">Loading...</span>\
+                        </div>\
+                        <div class="spinner-grow text-success" role="status">\
+                          <span class="sr-only">Loading...</span>\
+                        </div>\
+                        <div class="spinner-grow text-danger" role="status">\
+                          <span class="sr-only">Loading...</span>\
+                        </div>\
+                        <div class="spinner-grow text-warning" role="status">\
+                          <span class="sr-only">Loading...</span>\
+                        </div>\
+                        <div class="spinner-grow text-info" role="status">\
+                          <span class="sr-only">Loading...</span>\
+                        </div>\
+                        <div class="spinner-grow text-light" role="status">\
+                          <span class="sr-only">Loading...</span>\
+                        </div>\
+                        <div class="spinner-grow text-dark" role="status">\
+                          <span class="sr-only">Loading...</span>\
+                        </div>'
+                        document.getElementById("ChartHere").appendChild(p);
+                                    
+            var colName, getdata, lbls;
+            
+            $.ajax({
+                url: "{% url 'DATA-SEND-NUMERICAL' %}",
+                type: "POST",
+                contentType: false,
+                processData: false,
+                data: form_data,
+                
+                success: function(data)
+            {	
+              setTimeout(() => {
+                console.log("contacting server");
+            console.log("enter linear");
+
+
+            var resp = JSON.parse(data);
+
+            get_x = resp[x];
+            console.log(get_x);
+            get_y = resp[y];
+            min = resp["min"];
+            max=resp["max"];
+            points=[]
+            for(var i=0; i<get_x.length; i++)
+            {
+              points[i] = {x:get_x[i],y:get_y[i]};
+              console.log(points[i])
+            } 
+            //console.log("Last"+points)
+            
+            colName=y+" vs "+x
+            plot_graph(points,min,max,colName,c)
+            
+              }, 4000);
+            
+            
+      }
+            });
+          });
+        
+        
+        
+        
+        
+
+</script>
+</head>
+<body id = "body">
+<h1>Linear Regression</h1>
+<!-- vertical tab-->
+		<form id = "form1" method = "POST">
+				{% csrf_token %}
+				<select id="sel1" class="custom-select" style="width:200px;" name = "x-value">
+				<option value="">X-axis</option>
+				</select>
+				</div>
+				
+				<p id="msg1"></p>
+				
+				<div>
+				<select id="sel2" class="custom-select" style="width:200px;" name = "y-value">
+				<option value="">Y-axis</option>
+				</select>
+        </div>
+        
+        
+
+        <p id="msg2"></p><br/><br/>
+        <div style="display:none" id="predictor">
+          <h3>Predict</h3>
+          x:<input type="number" name="x_test" id="id_x_test"></input>
+          <br><br>
+          y:<input type="text" name="y_test" id="id_y_test"readonly></input>
+        </div>
+        <br/><br/><br/><br/>
+				<button class="button5" style="width:200px;">Submit</button>	
+		</form>
+    	<div class="card" id="slider_output" style="display:none">
+              
+        </div>
+         
+        
+        
+        
+        
+</body>
+</html>

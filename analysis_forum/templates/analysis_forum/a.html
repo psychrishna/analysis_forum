@@ -1,0 +1,31 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+<script>
+
+</script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js">
+</script>
+</head>
+<body id = "body">
+<h1>BARCHART</h1>
+
+<div ng-app="">
+  <form name = "myForm">
+		<select id="sel1" ng-model="myInput21" style="width:200px;" name="xval" required>
+        <option value="abcd">X-axis</option>
+        <option value="abd">X-22axis</option>
+		</select>
+		<select id="sel2" ng-model="myInput2" style="width:200px;" name="yval" required>
+        <option value="1">Y-axis</option>
+        <option value="3">Y-11axis</option>
+		</select>
+		<button type = "submit" class="button5" style="width:200px;" ng-disabled = "!myForm.$invalid">Submit</button>	
+		</form>
+</div>
+		
+    
+</body>
+</html>
